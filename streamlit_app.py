@@ -5,38 +5,34 @@ import pandas as pd
 st.title(':cup_with_straw: Customize Your Smoothie! :cup_with_straw:')
 st.write('Choose the fruits you want in your custom Smoothie!')
 
-
 name_on_order = st.text_input('Name: ')
 st.write('The name on your Smoothie will be:', name_on_order)
 
 cnx = st.connection("snowflake")
 session = cnx.session()
 my_dataframe = session.table('Smoothies.public.fruit_options').select(col('fruit_name'), col('search_on')).collect()
-#st.dataframe(data = my_dataframe, use_container_width=True)
-#st.stop()
 
-#Convert the snowpark Dataframe to a pandas Dataframe so we can use the LOC function
-pd_df = my_dataframe.to_pandas()
+# Convert the list of Row objects to a Pandas DataFrame
+pd_df = pd.DataFrame(my_dataframe)
+
+# Display the DataFrame
 st.dataframe(pd_df)
-st.stop()
 
+# Extract the fruit names for the multiselect
+fruit_names = pd_df['fruit_name'].tolist()
+
+# Create a multiselect for choosing ingredients
 ingredients_list = st.multiselect(
-    'Choose up to 5 ingredients:', my_dataframe, max_selections = 5
+    'Choose up to 5 ingredients:', fruit_names, max_selections=5
 )
 
 if ingredients_list:
-    #st.write(ingredients_list)
-    #st.text(ingredients_list)
+    # Concatenate selected fruits with a space
+    ingredients_string = ' '.join(ingredients_list)
 
-    ingredients_string = ''
-
-    for fruit_chosen in ingredients_list:
-        ingredients_string += fruit_chosen + ' '
-
-    # st.write(ingredients_string)
-
-    my_insert_stmt = """ insert into smoothies.public.orders(ingredients, name_on_order) values ('""" + ingredients_string + """', '""" + name_on_order + """')"""
-    # st.write(my_insert_stmt)
+    # Prepare the SQL insert statement
+    my_insert_stmt = f"""INSERT INTO smoothies.public.orders(ingredients, name_on_order) 
+                         VALUES ('{ingredients_string}', '{name_on_order}')"""
     
     time_to_insert = st.button('Submit Order')
 
