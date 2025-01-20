@@ -34,7 +34,8 @@ if ingredients_list:
         ingredients_string += fruit_chosen + ' '
 
     # st.write(ingredients_string)
-
+    search_on = pd_df.loc[pd_df['fruit_name'] == fruit_chosen, 'search_on'].iloc[0]
+    st.write['The search value for ', fruit_chosen, ' is ', search_on '.')
     my_insert_stmt = """ insert into smoothies.public.orders(ingredients, name_on_order) values ('""" + ingredients_string + """', '""" + name_on_order + """')"""
     # st.write(my_insert_stmt)
     
